@@ -1,0 +1,10 @@
+==============================================================================
+				  Linux Server
+		This server is on internal network. 
+		   If you accessed it without permission, 
+			 please leave immediately.			    
+
+This is a {{ ansible_distribution }} {{ ansible_distribution_version }}
+Hostname: {{ ansible_fqdn }}
+IP Address: {{ ansible_all_ipv4_addresses }}
+===============================================================================

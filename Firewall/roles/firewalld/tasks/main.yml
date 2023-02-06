@@ -1,0 +1,20 @@
+---
+######################### Enable Service Firewalld ########################
+- name: Enable service firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    enabled: yes
+
+######################### Zabbix Agent #####################################
+- name: Enable Zabbix Agent Firewalld on {{ansible_hostname}}          
+  firewalld:
+    port: 10050-10051/tcp
+    permanent: yes
+    state: enabled
+
+- name: Restart service firewalld on centos, in all cases, also issue daemon-reload to pick up config changes
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: firewalld    
+...

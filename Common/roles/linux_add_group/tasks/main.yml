@@ -1,0 +1,3 @@
+---
+- name: Execute the permission in remote shell on {{ ansible_hostname }}.
+  shell: realm permit -g "Administrators_ReadOnly"

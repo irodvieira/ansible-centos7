@@ -1,0 +1,33 @@
+---
+common_packages_redhat:
+    - vim
+    - "Development Tools"
+    - net-tools
+    - ntpd
+    - ntpdate
+    - screen
+    - less
+    - tree
+    - sysstat
+    - psmisc
+    - bind-utils
+    - unzip
+    - bzip2
+    - multitail
+    - htop
+    - nmap
+    - tcpdump
+    - rsync
+    - traceroute
+    - iptraf
+    - iperf
+    - gcc
+    - gcc-c++
+    - kernel-devel
+    - nano
+    - git
+    - pip
+    - wget
+    - perl
+    - yum-utils
+...

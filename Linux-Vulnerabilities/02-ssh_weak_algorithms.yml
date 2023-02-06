@@ -1,0 +1,4 @@
+- name: Default Playbook - Starting Deploy
+  hosts: all 
+  roles: 
+    - 02-ssh_weak_algorithms

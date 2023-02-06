@@ -1,0 +1,36 @@
+---
+- name: Active Strong Algorithms to SSH on Ubuntu Servers
+  lineinfile:
+      path: /etc/ssh/sshd_config
+      line: "{{ item }}" 
+  with_items:    
+        - 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr' 
+        - 'MACs hmac-sha1,umac-64@openssh.com,hmac-ripemd160' 
+      
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  become: yes
+  become_user: root
+  
+- name: Active Strong Algorithms to SSH on CentOS Servers
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat' 
+  lineinfile:
+      path: /etc/ssh/sshd_config
+      line: "{{ item }}" 
+  with_items:    
+        - 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr' 
+        - 'MACs hmac-sha1,umac-64@openssh.com,hmac-ripemd160'  
+  
+- name: Restart Ubuntu Server ssh service
+  service:
+    name: ssh
+    state: restarted    
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  become: yes
+  become_user: root
+
+- name: Restart CentOS ssh service
+  systemd:
+    name: sshd
+    state: restarted    
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'      
+...

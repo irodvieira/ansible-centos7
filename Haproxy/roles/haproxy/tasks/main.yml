@@ -1,0 +1,39 @@
+---
+# tasks file for haproxy
+- name: create ssl folder
+  file: 
+    path: '/etc/haproxy/ssl'
+    state: directory
+    
+- name: copy certificate to ssl folder
+  copy:
+    src: 'files/'
+    dest: '/etc/haproxy/ssl'
+
+- name: Change HAproxy.cfg
+  template: src=templates/haproxy.cfg dest=/etc/haproxy/haproxy.cfg force=yes owner=root group=root mode=0755 backup=yes
+  notify:
+    - restart haproxy
+    
+- name: Change sysctl.conf
+  lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '{{item.From}}'
+    line: '{{item.To}}'
+  with_items:
+  - { From: 'fs.file-max =.*', To: 'fs.file-max = 10000000' }
+  - { From: 'fs.nr_open =.*', To: 'fs.nr_open = 10000000' }
+  - { From: 'net.ipv6.conf.all.disable_ipv6 =.*', To: 'net.ipv6.conf.all.disable_ipv6 = 1' }
+  - { From: 'net.ipv6.conf.default.disable_ipv6 =.*', To: 'net.ipv6.conf.default.disable_ipv6 = 1' }
+  - { From: 'net.ipv4.ip_nonlocal_bind=.*', To: 'net.ipv4.ip_nonlocal_bind= 1' }
+  - { From: 'net.ipv4.tcp_mem =.*', To: 'net.ipv4.tcp_mem = 786432 1697152 1945728' }
+  - { From: 'net.ipv4.tcp_rmem =.*', To: 'net.ipv4.tcp_rmem = 4096 4096 16777216' }
+  - { From: 'net.ipv4.tcp_wmem =.*', To: 'net.ipv4.tcp_wmem = 4096 4096 16777216' }
+  - { From: 'net.ipv4.ip_local_port_range =.*', To: 'net.ipv4.ip_local_port_range = 1025 65534' }
+  - { From: 'net.ipv4.tcp_fin_timeout =.*', To: 'net.ipv4.tcp_fin_timeout = 45' }
+  - { From: 'net.ipv4.tcp_tw_reuse =.*', To: 'net.ipv4.tcp_tw_reuse = 1' }
+  - { From: 'net.ipv4.tcp_max_tw_buckets =.*', To: 'net.ipv4.tcp_max_tw_buckets = 400000' }
+  
+- name: Apply sysctl
+  shell: sysctl -p
+...

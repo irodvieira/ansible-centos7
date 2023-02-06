@@ -1,0 +1,22 @@
+---
+- name: Enable UFW on {{ansible_hostname}}
+  ufw:
+    state: enabled
+  become: yes
+  become_user: root
+     
+- name: Deny all access to port 5353 UDP on {{ansible_hostname}}
+  ufw:
+    rule: deny
+    port: 5353
+    proto: udp    
+  become: yes
+  become_user: root
+
+- name: Allow everything and Enable UFW on {{ansible_hostname}}
+  ufw:
+    state: enabled
+    policy: allow
+  become: yes
+  become_user: root    
+...

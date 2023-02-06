@@ -1,0 +1,104 @@
+---
+#=============== Common playbook for Linux Centos7 ===================#
+# Created by Ivo Rodrigues Vieira
+# On November 19, 2020
+# Used in CentOS Linux release 7.8.2003 (Core)
+# Ansible version 2.9.14
+# AWX version 15.0.1
+#=====================================================================#
+
+ 
+# --- General --- Change the format  and the size of the history ----- #
+- name: Change /etc/profile
+  lineinfile: dest=/etc/profile line={{ item }}
+  with_items:
+    - '#--- Default export & Alias ---#'
+    - 'export HISTTIMEFORMAT="%d/%m/%Y - %H:%M:%S - "'
+    - 'export HISTSIZE="5000"'
+    - 'export HISTFILESIZE="5000"'
+
+# --- SELINUX --- Disables selinux temporarily ----- #
+- name: Disable SELINUX (Temp)
+  selinux:
+    state: disabled  
+
+# --- SELINUX --- Disables selinux permanent ----- #
+- name: Disable SELINUX (Permanent)
+  replace:
+    dest=/etc/selinux/config
+    regexp='SELINUX=enforcing'
+    replace='SELINUX=disabled'
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+ #--- SELINUX --- Enable firewalld permanent ----- #
+- name: Enable Firewalld 
+  systemd: 
+      name: firewalld 
+      state: started
+      enabled: true
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'  
+
+- name: Enable Zabbix Ports        
+  firewalld:
+    port: 10050-10051/tcp
+    permanent: yes
+    state: enabled  
+
+#- name: Enable SNMP Ports        
+#  firewalld:
+#    port: 161-162/tcp
+#    permanent: yes
+#    state: enabled      
+
+- name: Add user support
+  user:
+    name: support
+    comment: "Support General"
+    group: wheel
+    shell: /bin/bash
+    home: /home/support
+    password: "oq2bYX5CL3nUCBY3."
+    
+#--- Timezone Settings --- Change the timezone#
+
+- name: Configuring localtime
+  file: src=/usr/share/zoneinfo/America/Toronto dest=/etc/localtime state=link force=yes
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+#--- SSH Service --- Change ssh options#
+- name: Setting basic SSH options
+  lineinfile:
+    dest=/etc/ssh/sshd_config
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.line }}
+  with_items:
+    #- { regexp: '#Port 22', line: 'Port 2222' } # Change from port 22 to 2222
+    #- { regexp: '#PermitRootLogin yes', line: 'PermitRootLogin yes' } # Allow root login via ssh
+    - { regexp: '#Banner none', line: 'Banner /etc/ssh/banner_ssh' } # Add a banner
+    - { regexp: '#ClientAliveInterval 0', line: 'ClientAliveInterval 120' } # Drop the inactive ssh session after the estimated time
+
+#--- SSH Protocol --- Force the use of protocol 2#
+- name: Active Protocol 2 to SSH 
+  lineinfile:
+      dest=/etc/ssh/sshd_config
+      line='Protocol 2'
+
+#--- SSH User --- Add allowed users#      
+#- name: Setting Allow Users to access (SSH)
+#  lineinfile:
+#     dest=/etc/ssh/sshd_config
+#     line='AllowUsers support root'
+
+#--- MOTD --- Change and add the motd template to the target. Template in roles/common_centos7/templates/main.yml # 
+- name: Add Motd
+  template: src=motd dest=/etc/motd force=yes owner=root group=root mode=0755
+
+#--- Banner SSH --- Change and add the banner file to the target. File in roles/common_centos7/files/main.yml # 
+# After changing the banner, restart the ssh service. Service restart parameters on roles/common_centos7/handlers/main.yml.
+- name: Add SSH Banner
+  copy: src=banner_ssh dest=/etc/ssh/banner_ssh
+  notify:
+    - Restart SSH
+    
+...
